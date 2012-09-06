@@ -1,4 +1,4 @@
-Reflecta is a node.js client for communicating with an Arduino via the Reflecta protocol.
+node-reflecta is a node.js client for communicating with an Arduino via the [Reflecta](https://github.com/JayBeavers/Reflecta) protocol.
 
 > _Stability: Low_
 
