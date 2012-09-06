@@ -1,0 +1,39 @@
+{
+  "name": "reflecta",
+  "description": "Node.js client for the Reflecta communications protocol for Arduino",
+  "version": "0.3.4",
+  "homepage": "https://github.com/jaybeavers/node-reflecta",
+  "author": {
+    "name": "Jay Beavers",
+    "email": "jay@hikinghomeschoolers.org",
+    "url": "http://jaybeavers.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jaybeavers/node-reflecta"
+  },
+  "bugs": {
+    "url": "https://github.com/jaybeavers/node-reflecta/issues"
+  },
+  "licenses": [
+    {
+      "type": "BSD",
+      "url": "https://github.com/JayBeavers/jaybeavers/node-reflecta/blob/master/LICENSE"
+    }
+  ],
+  "dependencies": {
+    "serialport": ">= 1.0.7"
+    },
+  "devDependencies": {
+    "mocha": "*",
+    "chai": "*",
+    "socket.io": "*"
+    },
+  "main": "reflecta",
+  "engines": {
+    "node": ">= 0.8.1"
+  },
+  "scripts": {
+    "test": "mocha"
+    }
+}
