@@ -7,13 +7,18 @@ Install the module with: `npm install reflecta`
 
 ```javascript
 var reflecta = require('reflecta');
+
+// Connect to a board on serial port ttyACM0 which corresponds to 'first USB serial device attached' in Linux, e.g. first Arduino
 var board = new reflecta.Board("/dev/ttyACM0");
 
 board.on('ready', function() {
+
+  // Wait for a response from the Arduino to the frame of data I'm going to send
   board.once('response', function(response) {
     console.log(response);
   });
 
+  // Send a frame of data containing '1'.  '1' happens to map to 'QueryInterface' in ReflectaFunctions
   board.sendFrame([1]);
 });
 ```
@@ -24,10 +29,10 @@ board.on('ready', function() {
 var reflecta = require('reflecta');
 reflecta.detect(function(error, boards, ports) {
 
-  // Current implementation only returns the first board found
+  // Choose the first board found
   var board = boards[0];
 
-  // board is not returned until 'ready' has already fired
+  // board is not returned until 'ready' has already fired, no need to wait for board.on('ready')
   board.once('response', function(response) {
     console.log(response);
   });
@@ -41,32 +46,33 @@ reflecta.detect(function(error, boards, ports) {
 
 On startup Reflecta probes the Arduino to see what libraries are installed using QueryInterface.  If it finds interfaces, it will automatically load a matching set of functions onto the Reflecta object using node's require or an npm install.  A few well known interfaces that are supported are:
 
-__[ARDU1](https://github.com/jaybeavers/node-reflecta/blob/master/node_modules/reflecta_ARDU1.js)__
+__[ardu1](https://github.com/JayBeavers/reflecta_ardu1)__
 
-The ARDU1 interface exposes the Arduino Digital & Analog I/O Functions and Wire and Servo libraries.
+The ardu1 interface exposes the Arduino Digital & Analog I/O Functions and Wire and Servo libraries.
 
-__[MOTO1](https://github.com/jaybeavers/node-reflecta/blob/master/node_modules/reflecta_MOTO1.js)__
+__[moto1](https://github.com/JayBeavers/reflecta_moto1)__
 
-The MOTO1 interface exposes the SparkFun Monster Moto shield with functions like Drive, Brake, and ReadCurrent.
+The moto1 interface exposes the SparkFun Monster Moto shield with functions like Drive, Brake, and ReadCurrent.
 
-__[HART1](https://github.com/jaybeavers/node-reflecta/blob/master/node_modules/reflecta_HART1.js)__
+__[hart1](https://github.com/JayBeavers/reflecta_hart1)__
 
-The HART1 interface exposes the settings functions for the Reflecta Heartbeat library such as setFrameRate.
+The hart1 interface exposes the settings functions for the Reflecta Heartbeat library such as setFrameRate.
 
-__[RBOT1](https://github.com/jaybeavers/node-reflecta/blob/master/node_modules/reflecta_RBOT1.js)__
+__[rbot1](https://github.com/JayBeavers/RocketBot/tree/master/RocketBaseArduino)__
 
-The RBOT1 interface exposes the commands for [RocketBot](https://github.com/JayBeavers/RocketBot) to launch pneumatic straw rockets and control blinky lights such as Animation, Compressor, Valve, and Fire.
+The rbot1 interface exposes the commands for [RocketBot](https://github.com/JayBeavers/RocketBot) to launch pneumatic straw rockets and control blinky lights such as Animation, Compressor, Valve, and Fire.
 
 An example of how to use interfaces:
 ```javascript
 var reflecta = require('reflecta');
-var board = new reflecta.Board("/dev/ttyACM0");
+reflecta.detect(function(error, boards, ports) {
 
-board.on('ready', function() {
+  // Choose the first board found
+  var board = boards[0];
 
-  board.ARDU1.digitalWrite(7, 1); // Set digital pin 7 to on
-  board.MOTO1.drive(50, 50); // Set left and right wheel powers to 50 out of 255
-  board.RBOT1.Fire(); // Fire a straw rocket
+  board.ardu1.digitalWrite(7, 1); // Set digital pin 7 to on
+  board.moto1.drive(50, 50); // Set left and right wheel powers to 50 out of 255
+  board.rbot1.Fire(); // Fire a straw rocket
 
 });
 ```

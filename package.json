@@ -22,7 +22,8 @@
     }
   ],
   "dependencies": {
-    "serialport": ">= 1.0.7"
+    "serialport": ">= 1.0.7",
+    "npm": "*"
     },
   "devDependencies": {
     "mocha": "*",
