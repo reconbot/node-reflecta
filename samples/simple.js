@@ -21,9 +21,9 @@ reflecta.detect(function(error, boards, ports) {
 	board.on('open', function() { console.log("open"); });
 	board.on('end', function() { console.log("end"); });
 
-	if (board.ARDU1) {
-		board.ARDU1.pinMode(ledPin, board.ARDU1.OUTPUT);
-		board.ARDU1.digitalWrite(ledPin, 1);
+	if (board.ardu1) {
+		board.ardu1.pinMode(ledPin, board.ardu1.OUTPUT);
+		board.ardu1.digitalWrite(ledPin, 1);
 	}
 
 });
