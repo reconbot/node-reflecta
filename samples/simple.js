@@ -1,6 +1,7 @@
 var ledPin = 11;
 
 var reflecta = require('../reflecta.js');
+var board;
 
 reflecta.detect(function(error, boards, ports) {
 
@@ -9,7 +10,8 @@ reflecta.detect(function(error, boards, ports) {
 		return;
 	}
 
-	var board = boards[0];
+	board = boards[0];
+	console.log('Board found on ' + ports[0]);
 
 	board.on('error', function(error) { console.log("e: " + error); });
 	board.on('warning', function(warning) { console.log("w: " + warning); });
