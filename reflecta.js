@@ -279,37 +279,24 @@ function Board(port, options) {
     serialPort.close(callback);
   };
   
-  this.sendFrame = function(frame, frame2, frame3, frame4) {
+  this.sendFrame = function() {
   
-    if (!Buffer.isBuffer(frame)) {
-      frame = new Buffer(frame);
-    }
-    
-    // This smells like something better done with params :-)
-    if (frame2) {
+    var frame = new Buffer(0);
 
-      if (!Buffer.isBuffer(frame2)) {
-        frame2 = new Buffer(frame2);
+    for (var i = 0; i < arguments.length; i++) {
+
+      var data = arguments[i];
+
+      if (!Buffer.isBuffer(data)) {
+        if (isNaN(data)) {
+          data = new Buffer(data);
+        } else {
+          // Don't allow a number passed as data to be misinterpreted as a buffer length
+          data = new Buffer([data]);
+        }
       }
 
-      frame = Buffer.concat( [frame, frame2] );
-    }
-
-    if (frame3) {
-
-      if (!Buffer.isBuffer(frame3)) {
-        frame3 = new Buffer(frame3);
-      }
-
-      frame = Buffer.concat( [frame, frame3] );
-    }
-
-    if (frame4) {
-      if (!Buffer.isBuffer(frame4)) {
-        frame4 = new Buffer(frame4);
-      }
-
-      frame = Buffer.concat( [frame, frame4] );
+      frame = Buffer.concat( [frame, data] );
     }
     
     // Artificial 8-bit rollover

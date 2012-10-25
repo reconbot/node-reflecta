@@ -1,4 +1,4 @@
-var ledPin = 11;
+var ledPin = 13; // Leonardo
 
 var assert = require('chai').assert;
 var util = require('util');
@@ -46,14 +46,14 @@ describe('Basic Reflexes', function() {
     });
   });
   
-  it('ARDU1 Blinky works', function(done) {
+  it('ardu1 Blinky works', function(done) {
 
     reflectaTestFactory(done, function(board) {
 
       var count = 0;
       var toggle = false;
 
-      board.ARDU1.pinMode(ledPin, board.ARDU1.OUTPUT);
+      board.ardu1.pinMode(ledPin, board.ardu1.OUTPUT);
 
       var toggleLed = function() {
 
@@ -64,8 +64,8 @@ describe('Basic Reflexes', function() {
         }
 
         toggle ^= 1;
-        board.ARDU1.digitalWrite(ledPin, toggle);
-        board.ARDU1.digitalRead(ledPin, function(value) {
+        board.ardu1.digitalWrite(ledPin, toggle);
+        board.ardu1.digitalRead(ledPin, function(value) {
           assert.equal(value, toggle);
           setTimeout(toggleLed, 200);
         });

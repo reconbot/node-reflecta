@@ -3,21 +3,28 @@ var app = require('http').createServer(),
   fs = require('fs');
 
 app.on('request', function (req, res) {
-  fs.readFile(__dirname + '/index.html',
-  function (err, data) {
-    if (err) {
-      res.writeHead(500);
-      return res.end('Error loading index.html');
-    }
+  console.log(req.url);
+  var path = null;
+  if (req.url === '/') {
+    path = __dirname + '/index.html';
+  } else {
+    path = __dirname + req.url;
+  }
 
-    res.writeHead(200);
-    res.end(data);
+  fs.readFile(path,
+    function (err, data) {
+      if (err) {
+        res.writeHead(500);
+        return res.end('Error loading index.html');
+      }
+
+      res.writeHead(200);
+      res.end(data);
   });
 });
 
 app.listen(8088);
 
-var direction = 0;
 var connected = null;
 
 io.sockets.on('connection', function (socket) {
