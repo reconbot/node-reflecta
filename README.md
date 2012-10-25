@@ -177,7 +177,7 @@ The communications port is open.  A light wrapper over node-serialport's open ev
 
 ## Futures
 
-See [this Trello Board](https://trello.com/board/reflecta/4fe0b182caf51043640db94b) for planned work.
+See [this Trello Board](https://trello.com/b/5ZyBFhPb) for planned work.
 
 ## License
 Copyright (c) 2012 Jay Beavers  
