@@ -37,7 +37,7 @@ reflecta.detect(function(error, boards, ports) {
   board.on('warning', function(warning) { console.log("w: " + warning); });
   board.on('message', function(message) { console.log("m: " + message); });
 
-  board.ARDU1.pinMode(ledPin, board.ARDU1.OUTPUT);
+  board.ardu1.pinMode(ledPin, board.ardu1.OUTPUT);
 
   // Wait until Arduino port is opened to listen for incoming connections  
   app.listen(httpPort);
@@ -49,7 +49,7 @@ reflecta.detect(function(error, boards, ports) {
     socket.on('toggle', function() {
       console.log('Received (toggle)');
       ledState ^= 1; // XOR, this toggles ledState betwen values 0 (e.g. off) and 1 (e.g. on)
-      board.ARDU1.digitalWrite(ledPin, ledState);
+      board.ardu1.digitalWrite(ledPin, ledState);
     });
   });
 });
