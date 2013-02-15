@@ -9,8 +9,13 @@ function Board(port, options) {
     return new Board(port, options);
   }
 
+  var delay = 0;
+  if(typeof options.delay === 'number' && options.delay > 0) {
+    delay = options.delay;
+  }
+
   var self = this;
-  
+
   var serialPort = new (require("serialport").SerialPort)(port, options);
 
   // Query our interfaces and attach our interface libraries
@@ -18,16 +23,18 @@ function Board(port, options) {
 
     var timeoutId = setTimeout(function() {
       self.emit('error', 'Timeout awaiting response to QueryInterface');
-    }, 1000);
+    }, delay + 1000);
 
     self.once('error', function(error) {
       clearTimeout(timeoutId);
     });
 
-    self.queryInterface(function(interfaces) {
-      clearTimeout(timeoutId);
-      self.emit('ready');
-    });    
+    setTimeout(function() {
+      self.queryInterface(function(interfaces) {
+        clearTimeout(timeoutId);
+        self.emit('ready');
+      });
+    }, delay);
   });
   
   // SLIP (http://www.ietf.org/rfc/rfc1055.txt) protocol special character definitions
