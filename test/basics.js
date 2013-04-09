@@ -4,7 +4,7 @@ var assert = require('chai').assert;
 var util = require('util');
 var reflecta = require('../reflecta.js');
 
-var reflectaTestFactory = function(done, callback) {
+function reflectaTestFactory(done, callback) {
 
   reflecta.detect({ baudrate: 57600, buffersize: 100 }, function(error, boards, ports) {
 
@@ -22,9 +22,15 @@ var reflectaTestFactory = function(done, callback) {
 
     boards[0].on('warning', function(warning) { console.log("w: " + warning); });
     boards[0].on('message', function(message) { console.log("m: " + message); });
-    boards[0].on('close', function() { console.log('close'); });
+    boards[0].on('close', function() { });
     boards[0].on('end', function() { console.log('end'); });
     boards[0].on('open', function() { console.log('open'); });
+
+    boards[0].endTest = function endTest(done) {
+      boards[0].removeAllListeners('error');
+      boards[0].on('error', function() { });
+      boards[0].close(done);
+    };
 
     callback(boards[0]);
   });
@@ -37,8 +43,7 @@ describe('Basic Reflexes', function() {
     reflectaTestFactory(done, function(board) {    
 
       board.on('response', function(response) {
-        board.removeAllListeners('error');
-        board.close(done);
+        board.endTest(done);
       });
       
       board.sendFrame(board.FunctionIds.queryInterface);
@@ -58,8 +63,7 @@ describe('Basic Reflexes', function() {
       var toggleLed = function() {
 
         if (++count > 6) {
-          board.removeAllListeners('error');
-          board.close(done);
+          board.endTest(done);
           return;
         }
 
@@ -106,8 +110,7 @@ describe('Basic Reflexes', function() {
         assert.equal(w2, w02);
         assert.equal(w3, w03);
 
-        board.removeAllListeners('error');
-        board.close(done);
+        board.endTest(done);
       });
     });
 
@@ -136,8 +139,7 @@ describe('Basic Reflexes', function() {
             assert.equal(buffer[1], 99);
             assert.equal(buffer.length, 2);
             
-            board.removeAllListeners('error');
-            board.close(done);
+          board.endTest(done);
           });
         });
       });

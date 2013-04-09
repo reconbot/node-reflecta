@@ -6,9 +6,6 @@ module.exports = function(grunt) {
     //test: {
     //  files: ['test/**/*.js']
     //},
-    lint: {
-      files: ['grunt.js', '*.js', 'interfaces/*.js', 'test/**/*.js', 'samples/*.js', 'samples/*/*.js']
-    },
     watch: {
       files: '<config:lint.files>',
       tasks: 'default'
@@ -29,15 +26,25 @@ module.exports = function(grunt) {
         strict: false,
         es5: true
       },
+      //uses_defaults: ['grunt.js', '*.js', 'interfaces/*.js', 'test/**/*.js', 'samples/*.js', 'samples/*/*.js'],
+      uses_defaults: ['grunt.js', '*.js', 'interfaces/*.js', 'samples/*.js', 'samples/*/*.js'],
       globals: {
         exports: true,
         describe: true,
         it: true
       }
+    },
+  typescript: {
+    base: {
+      src: ['*.ts']
     }
+  }
   });
 
+  grunt.loadNpmTasks('grunt-typescript');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
+
   // Default task.
-  grunt.registerTask('default', 'lint test');
+  grunt.registerTask('default', ['typescript', 'jshint']);
 
 };

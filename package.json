@@ -24,17 +24,19 @@
   "dependencies": {
     "serialport": ">= 1.0.7",
     "npm": "*"
-    },
+  },
   "devDependencies": {
-    "mocha": "*",
+    "mocha": "~1.9.0",
     "chai": "*",
-    "socket.io": "*"
-    },
+    "socket.io": "*",
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.4.3"
+  },
   "main": "reflecta",
   "engines": {
     "node": ">= 0.8.1"
   },
   "scripts": {
     "test": "mocha"
-    }
+  }
 }
