@@ -21,9 +21,8 @@ function Board(port, options) {
         });
         setTimeout(function () {
             self.queryInterface(function (interfaces) {
-                clearTimeout(timeoutId);
                 self.emit('ready');
-            });
+            }, timeoutId);
         }, delay);
     });
     var EscapeCharacters = {
@@ -226,11 +225,11 @@ function Board(port, options) {
         self.emit('error', err);
     });
     events.EventEmitter.call(this);
-    this.close = function (callback) {
+    this.close = function close(callback) {
         self.sendFrame(self.FunctionIds.reset);
         serialPort.close(callback);
     };
-    this.sendFrame = function () {
+    this.sendFrame = function sendFrame() {
         var frame = new Buffer(0);
         for(var i = 0; i < arguments.length; i++) {
             var data = arguments[i];
@@ -263,61 +262,75 @@ function Board(port, options) {
         serialPort.write(writeArray);
         return writeSequence++;
     };
-    this.pushArray = function (array) {
+    this.pushArray = function pushArray(array) {
         self.sendFrame(self.FunctionIds.pushArray, array);
     };
-    this.queryInterface = function (callback) {
+    this.queryInterface = function queryInterface(callback, timeoutId) {
         var callSequence = self.sendFrame(self.FunctionIds.queryInterface);
-        var queryInterfaceHandler = function (response) {
+        function findInterfaceModules(reflectaInterfaces) {
+            if(reflectaInterfaces.length === 0) {
+                callback(self.interfaces);
+            } else {
+                var reflectaInterface = reflectaInterfaces.pop();
+                var interfaceModule = 'reflecta_' + reflectaInterface.id;
+                try  {
+                    self[reflectaInterface.id] = require(interfaceModule)(self, reflectaInterface.offset);
+                    self.interfaces[reflectaInterface.id] = self[reflectaInterface.id];
+                    findInterfaceModules(reflectaInterfaces);
+                } catch (error) {
+                    self.emit('message', 'QueryInterface: local interface definition not found for ' + reflectaInterface.id);
+                    console.log('searching for ' + reflectaInterface.id);
+                    var npm = require('npm');
+                    npm.load(function (error, npm) {
+                        npm.install(interfaceModule, function (error) {
+                            if(error) {
+                                self.emit('warning', 'QueryInterface: npm registry interface definition not found for ' + reflectaInterface.id + ', ' + error);
+                            } else {
+                                self[reflectaInterface.id] = require(interfaceModule)(self, reflectaInterface.offset);
+                                self.interfaces[reflectaInterface.id] = self[reflectaInterface.id];
+                            }
+                            findInterfaceModules(reflectaInterfaces);
+                        });
+                    });
+                }
+            }
+        }
+        var queryInterfaceHandler = function queryInterfaceHandler(response) {
             if(response.sequence === callSequence) {
+                clearTimeout(timeoutId);
                 self.removeListener('response', queryInterfaceHandler);
                 self.interfaces = {
                 };
+                var interfaceIds = [];
                 for(var interfaceIndex = 0; interfaceIndex < response.data.length / 6; interfaceIndex++) {
-                    var interfaceOffset = response.data[interfaceIndex * 6];
-                    var interfaceId = response.data.slice(interfaceIndex * 6 + 1, interfaceIndex * 6 + 6).toString();
-                    var interfaceModule = 'reflecta_' + interfaceId;
-                    try  {
-                        self[interfaceId] = require(interfaceModule)(self, interfaceOffset);
-                        self.interfaces[interfaceId] = self[interfaceId];
-                    } catch (error) {
-                        self.emit('message', 'QueryInterface: local interface definition not found for ' + interfaceId);
-                        ((function (interfaceId) {
-                            var interfaceModule = 'reflecta_' + interfaceId;
-                            console.log('searching for ' + interfaceId);
-                            var npm = require('npm');
-                            npm.load(function (error, npm) {
-                                npm.install(interfaceModule, function (error) {
-                                    if(error) {
-                                        self.emit('warning', 'QueryInterface: npm registry interface definition not found for ' + interfaceId + ', ' + error);
-                                    } else {
-                                        self[interfaceId] = require(interfaceModule)(self, interfaceOffset);
-                                        self.interfaces[interfaceId] = self[interfaceId];
-                                    }
-                                });
-                            });
-                        })(interfaceId));
-                    }
+                    var offset = response.data[interfaceIndex * 6];
+                    var id = response.data.slice(interfaceIndex * 6 + 1, interfaceIndex * 6 + 6).toString();
+                    interfaceIds.push({
+                        id: id,
+                        offset: offset
+                    });
                 }
-                callback(self.interfaces);
+                findInterfaceModules(interfaceIds);
             }
         };
         self.on('response', queryInterfaceHandler);
     };
-    this.sendResponseCount = function (count, callback) {
+    this.sendResponseCount = function sendResponseCount(count, callback) {
         var callSequence = self.sendFrame([
             self.FunctionIds.pushArray, 
             1, 
             count, 
             self.FunctionIds.sendResponseCount
         ]);
-        self.once('response', function (response) {
+        var sendResponseCountHandler = function (response) {
             if(response.sequence === callSequence) {
+                self.removeListener('response', sendResponseCountHandler);
                 callback(response.data);
             }
-        });
+        };
+        self.on('response', sendResponseCountHandler);
     };
-    this.sendResponse = function (callback) {
+    this.sendResponse = function sendResponse(callback) {
         var callSequence = self.sendFrame(self.FunctionIds.sendResponse);
         self.once('response', function (response) {
             if(response.sequence === callSequence) {

@@ -13,13 +13,14 @@ function reflectaTestFactory(done, callback) {
       return;
     }
 
-    boards[0].on('error', function(error) {
+    var errorHandler = function(error) {
       console.log("e: " + error);
       boards[0].close(function() {
         done(error);
       });
-    });
+    };
 
+    boards[0].on('error', errorHandler);
     boards[0].on('warning', function(warning) { console.log("w: " + warning); });
     boards[0].on('message', function(message) { console.log("m: " + message); });
     boards[0].on('close', function() { });
@@ -27,8 +28,8 @@ function reflectaTestFactory(done, callback) {
     boards[0].on('open', function() { console.log('open'); });
 
     boards[0].endTest = function endTest(done) {
-      boards[0].removeAllListeners('error');
       boards[0].on('error', function() { });
+      boards[0].removeListener('error', errorHandler);
       boards[0].close(done);
     };
 

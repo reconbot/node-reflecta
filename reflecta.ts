@@ -33,9 +33,8 @@ export function Board(port, options) {
 
     setTimeout(function() {
       self.queryInterface(function(interfaces) {
-        clearTimeout(timeoutId);
         self.emit('ready');
-      });
+      }, timeoutId);
     }, delay);
   });
   
@@ -49,10 +48,14 @@ export function Board(port, options) {
   };
   
   var ReadState = {
-    FrameStart      : 0, // Reading the frame sequence # at the start of the frame
-    ReadingFrame    : 1, // Reading frame data bytes until an End is received
-    FrameEnded      : 2,  // End received, processing the frame data
-    FrameInvalid    : 3 // Waiting for the next End character to get a fresh frame state
+    // Reading the frame sequence # at the start of the frame
+    FrameStart      : 0,
+    // Reading frame data bytes until an End is received
+    ReadingFrame    : 1,
+    // End received, processing the frame data
+    FrameEnded      : 2,
+    // Waiting for the next End character to get a fresh frame state
+    FrameInvalid    : 3
   };
   
   var FrameTypes = {
@@ -87,7 +90,8 @@ export function Board(port, options) {
     reset               : [ 0x7A ]
   };
 
-  var writeArray = []; // Space to compose an outgoing frame of data
+  // Space to compose an outgoing frame of data
+  var writeArray = [];
   var writeArrayIndex = 0;
   
   var writeSequence = 0;
@@ -165,7 +169,8 @@ export function Board(port, options) {
   };
   
   var frameSequence = 0;
-  var frameBuffer = []; // Buffer to hold a frame of data pulled out of the incoming communications stream
+  // Buffer to hold a frame of data pulled out of the incoming communications stream
+  var frameBuffer = [];
   var frameIndex = 0;
   
   var parseFrame = function(data) {
@@ -196,9 +201,12 @@ export function Board(port, options) {
             readSequence = frameSequence + 1;
           }
           
-          readChecksum = b; // Start off a new checksum
-          frameBuffer = []; // Reinitialize the buffer since we send using frameBuffer.length
-          frameIndex = 0; // Reset the buffer pointer to beginning
+          // Start off a new checksum
+          readChecksum = b;
+          // Reinitialize the buffer since we send using frameBuffer.length
+          frameBuffer = [];
+          // Reset the buffer pointer to beginning
+          frameIndex = 0;
 
           readState = ReadState.ReadingFrame;
           
@@ -283,12 +291,12 @@ export function Board(port, options) {
   
   events.EventEmitter.call(this);
   
-  this.close = function(callback) {
+  this.close = function close(callback) {
     self.sendFrame(self.FunctionIds.reset);
     serialPort.close(callback);
   };
   
-  this.sendFrame = function() {
+  this.sendFrame = function sendFrame() {
   
     var frame = new Buffer(0);
 
@@ -340,59 +348,79 @@ export function Board(port, options) {
   // [ 1 ]              pushArray
   //   [ 4 ]            count of parameter data
   //     [ 9 8 7 6 ]    parameter data to be pushed on the stack
-  this.pushArray = function(array) {
+  this.pushArray = function pushArray(array) {
     
     self.sendFrame(self.FunctionIds.pushArray, array);
     
   };
   
   // Query the interfaces (e.g. function groups) bound on the Arduino
-  this.queryInterface = function(callback) {
+  this.queryInterface = function queryInterface(callback, timeoutId) {
     
     var callSequence = self.sendFrame(self.FunctionIds.queryInterface);
+
+    function findInterfaceModules(reflectaInterfaces) {
+
+      if (reflectaInterfaces.length === 0) {
+
+        callback(self.interfaces);
+
+      } else {
+
+        var reflectaInterface = reflectaInterfaces.pop();
+        var interfaceModule = 'reflecta_' + reflectaInterface.id;
+
+        try {
+          // Try and find the interface module locally
+          self[reflectaInterface.id] = require(interfaceModule)(self, reflectaInterface.offset);
+          self.interfaces[reflectaInterface.id] = self[reflectaInterface.id];
+
+          // recurse until list is done
+          findInterfaceModules(reflectaInterfaces);
+        }
+        catch (error) {
+          self.emit('message', 'QueryInterface: local interface definition not found for ' + reflectaInterface.id);
+
+            // If not found locally, search for it in the NPM registry
+          console.log('searching for ' + reflectaInterface.id);
+          var npm = require('npm');
+          npm.load(function(error, npm) {
+            npm.install(interfaceModule, function(error) {
+              if (error) {
+                self.emit('warning', 'QueryInterface: npm registry interface definition not found for ' + reflectaInterface.id + ', ' + error);
+              } else {
+                self[reflectaInterface.id] = require(interfaceModule)(self, reflectaInterface.offset);
+                self.interfaces[reflectaInterface.id] = self[reflectaInterface.id];
+              }
+
+              findInterfaceModules(reflectaInterfaces);
+            });
+          });                
+        }
+      }
+    }
     
-    var queryInterfaceHandler = function(response) {
+    var queryInterfaceHandler = function queryInterfaceHandler(response) {
 
       if (response.sequence === callSequence) {
+
+        // Clear the pending timeout since we've received a response
+        clearTimeout(timeoutId);
 
         self.removeListener('response', queryInterfaceHandler);
 
         self.interfaces = {};
 
+        var interfaceIds = [];
         for (var interfaceIndex = 0; interfaceIndex < response.data.length / 6; interfaceIndex++) {
 
-          var interfaceOffset = response.data[interfaceIndex * 6];
-          var interfaceId = response.data.slice(interfaceIndex * 6 + 1, interfaceIndex * 6 + 6).toString();
-          var interfaceModule = 'reflecta_' + interfaceId;
+          var offset = response.data[interfaceIndex * 6];
+          var id = response.data.slice(interfaceIndex * 6 + 1, interfaceIndex * 6 + 6).toString();
+          interfaceIds.push({ id: id, offset: offset });
 
-          try {
-            // Try and find the interface module locally
-            self[interfaceId] = require(interfaceModule)(self, interfaceOffset);
-            self.interfaces[interfaceId] = self[interfaceId];
-          }
-          catch (error) {
-            self.emit('message', 'QueryInterface: local interface definition not found for ' + interfaceId);
-
-            // If not found locally, search for it in the NPM registry
-            (function(interfaceId) {
-              var interfaceModule = 'reflecta_' + interfaceId;
-              console.log('searching for ' + interfaceId);
-              var npm = require('npm');
-              npm.load(function(error, npm) {
-                npm.install(interfaceModule, function(error) {
-                  if (error) {
-                    self.emit('warning', 'QueryInterface: npm registry interface definition not found for ' + interfaceId + ', ' + error);
-                  } else {
-                    self[interfaceId] = require(interfaceModule)(self, interfaceOffset);
-                    self.interfaces[interfaceId] = self[interfaceId];
-                  }
-                });
-              });                
-            }(interfaceId));
-          }
         }
 
-        callback(self.interfaces);
+        findInterfaceModules(interfaceIds);
       }
     };
 
@@ -400,21 +428,24 @@ export function Board(port, options) {
   };
   
   // Request a response with n bytes from the stack, where n == the first byte on the stack
-  this.sendResponseCount = function(count, callback) {
+  this.sendResponseCount = function sendResponseCount(count, callback) {
     
     var callSequence = self.sendFrame( [self.FunctionIds.pushArray, 1, count, self.FunctionIds.sendResponseCount] );
     
-    // TODO: Tighten logic not to assume ours must be the next response
-    self.once('response', function(response) {
+    var sendResponseCountHandler = function(response) {
       if (response.sequence === callSequence) {
+        self.removeListener('response', sendResponseCountHandler);
+
         callback(response.data);
       }
       
-    });
+    }
+
+    self.on('response', sendResponseCountHandler);
   };
   
   // Request a response with 1 byte from the stack
-  this.sendResponse = function(callback) {
+  this.sendResponse = function sendResponse(callback) : void {
     
     var callSequence = self.sendFrame(self.FunctionIds.sendResponse);
     
@@ -490,4 +521,3 @@ export function detect(options, callback) : void {
   });
 }
 
-//module.exports = { Board: Board, detect: detect };
