@@ -35,7 +35,7 @@ function reflectaTestFactory(done, callback) {
 
     callback(boards[0]);
   });
-};
+}
 
 describe('Basic Reflexes', function() {
     

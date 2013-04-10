@@ -3,9 +3,6 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     pkg: '<json:package.json>',
-    //test: {
-    //  files: ['test/**/*.js']
-    //},
     watch: {
       files: '<config:lint.files>',
       tasks: 'default'
@@ -24,27 +21,33 @@ module.exports = function(grunt) {
         eqnull: true,
         node: true,
         strict: false,
-        es5: true
+        es5: true,
+        globals: {
+          describe: true,
+          it: true
+        }
       },
-      //uses_defaults: ['grunt.js', '*.js', 'interfaces/*.js', 'test/**/*.js', 'samples/*.js', 'samples/*/*.js'],
-      uses_defaults: ['grunt.js', '*.js', 'interfaces/*.js', 'samples/*.js', 'samples/*/*.js'],
-      globals: {
-        exports: true,
-        describe: true,
-        it: true
-      }
+      uses_defaults: ['*.js', 'interfaces/*.js', 'test/**/*.js', 'samples/*.js', 'samples/*/*.js']
     },
   typescript: {
     base: {
       src: ['*.ts']
-    }
+    },
+  },
+  simplemocha: {
+    options: {
+      timeout: 3000,
+      ignoreLeaks: false,
+      reporter: 'spec'
+    },
+    all: { src: 'test/**/*.js' }
   }
   });
 
   grunt.loadNpmTasks('grunt-typescript');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-simple-mocha');
 
-  // Default task.
-  grunt.registerTask('default', ['typescript', 'jshint']);
+  grunt.registerTask('default', ['typescript', 'jshint', 'simplemocha']);
 
 };
