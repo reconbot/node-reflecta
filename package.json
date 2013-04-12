@@ -1,7 +1,7 @@
 {
   "name": "reflecta",
   "description": "Node.js client for the Reflecta communications protocol for Arduino",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "homepage": "https://github.com/jaybeavers/node-reflecta",
   "author": {
     "name": "Jay Beavers",
@@ -38,8 +38,5 @@
   "main": "reflecta",
   "engines": {
     "node": ">= 0.8.1"
-  },
-  "scripts": {
-    "test": "mocha"
   }
 }
