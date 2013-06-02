@@ -169,11 +169,28 @@ board.on('open', function() ... );
 
 The communications port is open.  A light wrapper over node-serialport's open event.
 
+## Working with TypeScript
+
+To recompile the Javascript from the Typescript source, you need a suite of Typescript tools installed with:
+
+```
+npm install -g tsc
+npm install -g tsd
+tsd install node
+```
+
+You can then recompile using:
+
+```
+tsc reflecta.ts
+```
+
 ## Release History
 
 - 0.3.x: Still in early state.  Subject to frequent breaking API changes at this time.
 - 0.3.3: Added reflecta.detect(...), renamed ctor from Reflecta to Board to match firmata/johnny-five
 - 0.3.4: Moved nodejs client to separate repository (node-reflecta) from Arduino source (Reflecta)
+- 0.3.5: Fix breaking change in Arduino Windows drivers that prevented detection of board, Typescript conversion
 
 ## Futures
 
