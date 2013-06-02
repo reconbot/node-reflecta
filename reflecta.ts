@@ -1,4 +1,4 @@
-///<reference path='../DefinitelyTyped/node/node.d.ts'/>
+///<reference path='d.ts/DefinitelyTyped/node/node.d.ts'/>
 
 var fs = require('fs');
 var events = require('events');
@@ -481,8 +481,9 @@ export function detect(options, callback) : void {
 
       // Under Windows this catches any Arduino that is loaded using the Teensyduino INF.
       // Hardcoded to detect a Teensy INF device for now.  Teensy INF works with Leonardo too.
-      if (item.manufacturer && item.manufacturer.indexOf('PJRC') !== -1) {
-        port = results[i].comName;
+      if(item.manufacturer && (item.manufacturer.indexOf('PJRC') !== -1 || item.manufacturer.indexOf('Arduino') !== -1)) {
+        // This case handles Windows & Leonardo
+         port = results[i].comName;
         break;
       }
 

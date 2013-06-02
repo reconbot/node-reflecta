@@ -354,7 +354,7 @@ function detect(options, callback) {
         var port;
         for(var i = 0; i < results.length; i++) {
             var item = results[i];
-            if(item.manufacturer && item.manufacturer.indexOf('PJRC') !== -1) {
+            if(item.manufacturer && (item.manufacturer.indexOf('PJRC') !== -1 || item.manufacturer.indexOf('Arduino') !== -1)) {
                 port = results[i].comName;
                 break;
             }
