@@ -39,6 +39,22 @@ reflecta.detect(function(error, boards, ports) {
     };
         
     console.log(heartbeat.collectingLoops + " : " + heartbeat.idleLoops + "\n accel " + util.inspect(hbData.accelerometer) + '\n gyro ' + util.inspect(hbData.gyroscope) + '\n  magno ' + util.inspect(hbData.magnometer));
+
+    // Calibration data from my MinIMU-9 magnometer, find your own values
+    var maxX = 114;
+    var minX = -160;
+    var maxY = 145;
+    var minY = -117;
+
+    // Following algorithm from pololu MinIMU-9-Arduino-AHRS Compass.ino without the tilt compensation
+    var magX = (hbData.magnometer.x - minX) / (maxX - minX) - 0.5;
+    var magY = (hbData.magnometer.y - minY) / (maxY - minY) - 0.5;
+
+    var heading = Math.atan2(-magY, magX) * 180 / Math.PI;
+    if (heading < 0) heading += 360; // Stay positive, people
+
+    console.log('compass heading: ' + heading);
+
   });
 
 });
