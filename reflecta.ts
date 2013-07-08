@@ -5,7 +5,7 @@ var events = require('events');
 var util = require('util');
 var path = require('path');
 
-export function Board(port, options) {
+export function Board(port, options) : void {
   
   if (!(this instanceof Board)) {
     return new Board(port, options);

@@ -58,19 +58,19 @@ reflecta.detect(function(error, boards, ports) {
     
     var hbData = {
       gyroscope: {
-        x: heartbeat.data.readFloatBE(32),
-        y: heartbeat.data.readFloatBE(28),
-        z: heartbeat.data.readFloatBE(24)
+        x: heartbeat.data.readFloatLE(32),
+        y: heartbeat.data.readFloatLE(28),
+        z: heartbeat.data.readFloatLE(24)
       },
       accelerometer: {
-        x: heartbeat.data.readFloatBE(20),
-        y: heartbeat.data.readFloatBE(16),
-        z: heartbeat.data.readFloatBE(12)
+        x: heartbeat.data.readFloatLE(20),
+        y: heartbeat.data.readFloatLE(16),
+        z: heartbeat.data.readFloatLE(12)
       },
       magnometer: {
-        x: heartbeat.data.readFloatBE(8),
-        y: heartbeat.data.readFloatBE(4),
-        z: heartbeat.data.readFloatBE(0)
+        x: heartbeat.data.readFloatLE(8),
+        y: heartbeat.data.readFloatLE(4),
+        z: heartbeat.data.readFloatLE(0)
       }
     };
         
