@@ -48,7 +48,7 @@ reflecta.detect(function(error, boards, ports) {
 
   var board = boards[0];
 
-  board.hart1.setFrameRate(10);
+  board.hart1.setFrameRate(5);
 
   board.on('heartbeat', function(heartbeat) {
     
@@ -70,8 +70,8 @@ reflecta.detect(function(error, boards, ports) {
       }
     };
         
-	// Calibration data from my MinIMU-9 magnometer, find your own values
-	var maxX = 114;
+	  // Calibration data from my MinIMU-9 magnometer, find your own values
+	  var maxX = 114;
     var minX = -160;
     var maxY = 145;
     var minY = -117;
@@ -80,11 +80,13 @@ reflecta.detect(function(error, boards, ports) {
     var magX = (hbData.magnometer.x - minX) / (maxX - minX) - 0.5;
     var magY = (hbData.magnometer.y - minY) / (maxY - minY) - 0.5;
 
-    var heading = Math.atan2(-magY, magX) * 180 / Math.PI;
+    var radians = Math.atan2(-magY, magX);
+
+    var heading = radians * 180 / Math.PI;
     if (heading < 0) heading += 360; // Stay positive, people
 
     if (connected) {
-      connected.emit('magnometer', { heading: heading });
+      connected.emit('magnometer', { heading: heading, radians: radians });
     }
 
   });

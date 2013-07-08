@@ -122,7 +122,7 @@ function drawAnnotations(circle) {
    context.fillStyle = ANNOTATIONS_FILL_STYLE;
    context.font = ANNOTATIONS_TEXT_SIZE + 'px Helvetica'; 
    
-   for (var angle=0; angle < 2*Math.PI; angle += Math.PI/8) {
+   for (var angle=0; angle < 2*Math.PI; angle += Math.PI/4) {
       context.beginPath();
       context.fillText(
         (angle * 180 / Math.PI).toFixed(0),
@@ -144,6 +144,8 @@ var drawDial = function drawDial(context, circle, angle) {
   context.textAlign = 'center';
   context.textBaseline = 'middle';
 
+  context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+
   drawCentroid(circle);
   drawCentroidGuidewire(circle, angle);
 
@@ -154,7 +156,3 @@ var drawDial = function drawDial(context, circle, angle) {
 
   context.restore();
 };
-
-var angle = Math.PI/4;
-
-drawDial(context, circle, angle);
