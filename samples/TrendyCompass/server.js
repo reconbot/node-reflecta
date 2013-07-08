@@ -1,8 +1,9 @@
-var app = require('http').createServer(),
-  io = require('socket.io').listen(app),
-  fs = require('fs');
+var server = require('http').Server();
+var io = require('socket.io').listen(server);
+var fs = require('fs');
 
-app.on('request', function (req, res) {
+// Set up the static file http server
+server.on('request', function (req, res) {
   console.log(req.url);
   var path = null;
   if (req.url === '/') {
@@ -23,11 +24,10 @@ app.on('request', function (req, res) {
   });
 });
 
-app.listen(8088);
-
+// Set up the socket.io connection to the web page
 var connected = null;
 
-io.sockets.on('connection', function (socket) {
+io.on('connection', function (socket) {
   connected = socket;
   
   socket.on('disconnect', function() {
@@ -35,7 +35,9 @@ io.sockets.on('connection', function (socket) {
   });
 });
 
-var util = require('util');
+server.listen(8088);
+
+// Set up the connection to the Arduino running BasicIMU firmware with a Pololu MinIMU-9 attached
 var reflecta = require('../../reflecta.js');
 reflecta.detect(function(error, boards, ports) {
 
@@ -46,13 +48,7 @@ reflecta.detect(function(error, boards, ports) {
 
   var board = boards[0];
 
-  board.on('error', function(error) { console.log("e: " + error); });
-  board.on('warning', function(warning) { console.log("w: " + warning); });
-  board.on('message', function(message) { console.log("m: " + message); });
-
-  board.on('close', function() { console.log("close"); });
-  board.on('open', function() { console.log("open"); });
-  board.on('end', function() { console.log("end"); });
+  board.hart1.setFrameRate(10);
 
   board.on('heartbeat', function(heartbeat) {
     
@@ -74,10 +70,22 @@ reflecta.detect(function(error, boards, ports) {
       }
     };
         
-    console.log(heartbeat.collectingLoops + " : " + heartbeat.idleLoops + " : accel " + util.inspect(hbData.accelerometer) + ' : gyro ' + util.inspect(hbData.gyroscope) + ' : magno ' + util.inspect(hbData.magnometer));
+	// Calibration data from my MinIMU-9 magnometer, find your own values
+	var maxX = 114;
+    var minX = -160;
+    var maxY = 145;
+    var minY = -117;
+
+    // Following algorithm from pololu MinIMU-9-Arduino-AHRS Compass.ino without the tilt compensation
+    var magX = (hbData.magnometer.x - minX) / (maxX - minX) - 0.5;
+    var magY = (hbData.magnometer.y - minY) / (maxY - minY) - 0.5;
+
+    var heading = Math.atan2(-magY, magX) * 180 / Math.PI;
+    if (heading < 0) heading += 360; // Stay positive, people
 
     if (connected) {
-      connected.emit('magnometer', { heading: hbData.magnometer.x % 360 });
+      connected.emit('magnometer', { heading: heading });
     }
+
   });
 });
