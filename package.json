@@ -26,11 +26,11 @@
     "npm": "*"
   },
   "devDependencies": {
-    "mocha": "~1.9.0",
+    "mocha": "~3.1.2",
     "chai": "*",
     "socket.io": "*",
-    "grunt": "~0.4.1",
-    "grunt-contrib-jshint": "~0.4.3",
+    "grunt": "~1.0.1",
+    "grunt-contrib-jshint": "~1.0.0",
     "grunt-typescript": "*",
     "jshint": "*",
     "grunt-simple-mocha": "~0.4.0"
