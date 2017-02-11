@@ -3,6 +3,8 @@ node-reflecta is a node.js client for communicating with an Arduino via the [Ref
 > _Stability: Low_
 
 ### Getting Started
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/reconbot/node-reflecta.svg)](https://greenkeeper.io/)
 Install the module with: `npm install reflecta`
 
 ```javascript
