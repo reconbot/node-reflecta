@@ -23,7 +23,8 @@
   ],
   "dependencies": {
     "serialport": ">= 1.0.7",
-    "npm": "*"
+    "npm": "*",
+    "snyk": "^1.88.0"
   },
   "devDependencies": {
     "mocha": "~1.9.0",
@@ -38,5 +39,10 @@
   "main": "reflecta",
   "engines": {
     "node": ">= 0.8.1"
-  }
+  },
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
+  },
+  "snyk": true
 }
